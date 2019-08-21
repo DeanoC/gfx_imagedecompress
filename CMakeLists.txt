@@ -15,13 +15,15 @@ if(NOT hasParent)
 endif ()
 
 SET_MIN_VERSIONS()
-set(LibName 
+set(LibName gfx_imagedecompress)
 project(${LibName})
 
 set(Interface
+		imagedecompress.h
 		)
 
 set(Src
+		imagedecompress.cpp
 		)
 
 set(Deps
