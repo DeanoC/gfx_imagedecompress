@@ -93,15 +93,15 @@ void DecompressRGBBlock(uint64_t const compressedBlock, uint32_t *outRGBA, bool 
 	}
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDRGBSingleModeBlock(void const * input,	uint32_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBCRGBSingleModeBlock(void const * input,	uint32_t output[4 * 4]) {
 	DecompressRGBBlock(*(uint64_t const*)input, output, false);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDExplictAlphaSingleModeBlock(void const *input, uint8_t* output, uint32_t pixelPitch) {
+AL2O3_EXTERN_C void Image_DecompressDXBCExplictAlphaSingleModeBlock(void const *input, uint8_t* output, uint32_t pixelPitch) {
 	DecompressExplicitAlphaBlock(*(uint64_t const*)input, output, pixelPitch);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDAlphaSingleModeBlock(void const * input, uint8_t* output, uint32_t pixelPitch) {
+AL2O3_EXTERN_C void Image_DecompressDXBCAlphaSingleModeBlock(void const * input, uint8_t* output, uint32_t pixelPitch) {
 	DecompressDXTCAlphaBlock(*(uint64_t const*)input, output, pixelPitch);
 }
 
@@ -110,79 +110,79 @@ AL2O3_EXTERN_C void Image_DecompressDXBCMultiModeLDRBlock(void const * input, ui
 }
 
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC1Block(void const * input,	uint32_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC1Block(void const * input,	uint32_t output[4 * 4]) {
 	DecompressRGBBlock(*(uint64_t const*)input, output, true);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC2Block(void const * input,	uint32_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC2Block(void const * input,	uint32_t output[4 * 4]) {
 	DecompressRGBBlock(((uint64_t const*)input)[1], output, false);
 	DecompressExplicitAlphaBlock(((uint64_t const*)input)[0], ((uint8_t *)output)+3, 4);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC3Block(void const * input,	uint32_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC3Block(void const * input,	uint32_t output[4 * 4]) {
 	DecompressRGBBlock(((uint64_t const*)input)[1], output, false);
 	DecompressDXTCAlphaBlock(((uint64_t const*)input)[0], ((uint8_t *)output)+3, 4);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC4Block(void const * input,	uint8_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC4Block(void const * input,	uint8_t output[4 * 4]) {
 	DecompressDXTCAlphaBlock(*((uint64_t const*)input), output, 1);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC5Block(void const * input,	uint8_t output[4 * 4 * 2]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC5Block(void const * input,	uint8_t output[4 * 4 * 2]) {
 	DecompressDXTCAlphaBlock(((uint64_t const*)input)[0], ((uint8_t *)output)+0, 2);
 	DecompressDXTCAlphaBlock(((uint64_t const*)input)[1], ((uint8_t *)output)+1, 2);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC7Block(void const * input,	uint32_t output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC7Block(void const * input,	uint32_t output[4 * 4]) {
 	Image_DecompressDXBCMultiModeLDRBlock((uint64_t const*)input, output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC1BlockF(void const * input,	float output[4 * 4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC1BlockF(void const * input,	float output[4 * 4 * 4]) {
 	uint32_t packed[4 * 4];
-	Image_DecompressAMDBC1Block(input, packed);
+	Image_DecompressDXBC1Block(input, packed);
 	TinyImageFormat_DecodeInput in = {};
 	in.pixel = packed;
 	TinyImageFormat_DecodeLogicalPixelsF(TinyImageFormat_B8G8R8A8_UNORM, &in, 16, output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC2BlockF(void const * input,	float output[4 * 4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC2BlockF(void const * input,	float output[4 * 4 * 4]) {
 	uint32_t packed[4 * 4];
-	Image_DecompressAMDBC2Block(input, packed);
-	TinyImageFormat_DecodeInput in = {};
-	in.pixel = packed;
-	TinyImageFormat_DecodeLogicalPixelsF(TinyImageFormat_B8G8R8A8_UNORM, &in, 16, output);
-}
-
-
-AL2O3_EXTERN_C void Image_DecompressAMDBC3BlockF(void const * input,	float output[4 * 4 * 4]) {
-	uint32_t packed[4 * 4];
-	Image_DecompressAMDBC3Block(input, packed);
+	Image_DecompressDXBC2Block(input, packed);
 	TinyImageFormat_DecodeInput in = {};
 	in.pixel = packed;
 	TinyImageFormat_DecodeLogicalPixelsF(TinyImageFormat_B8G8R8A8_UNORM, &in, 16, output);
 }
 
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC4BlockF(void const * input,	float output[4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC3BlockF(void const * input,	float output[4 * 4 * 4]) {
+	uint32_t packed[4 * 4];
+	Image_DecompressDXBC3Block(input, packed);
+	TinyImageFormat_DecodeInput in = {};
+	in.pixel = packed;
+	TinyImageFormat_DecodeLogicalPixelsF(TinyImageFormat_B8G8R8A8_UNORM, &in, 16, output);
+}
+
+
+AL2O3_EXTERN_C void Image_DecompressDXBC4BlockF(void const * input,	float output[4 * 4]) {
 	uint8_t packed[4 * 4];
-	Image_DecompressAMDBC4Block(input, packed);
+	Image_DecompressDXBC4Block(input, packed);
 	for(uint32_t i = 0;i < 4 * 4; ++i) {
 		output[i] = ((float) packed[i]) / 255.0f;
 	}
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC5BlockF(void const * input,	float output[4 * 4 * 2]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC5BlockF(void const * input,	float output[4 * 4 * 2]) {
 	uint8_t packed[4 * 4 * 2];
-	Image_DecompressAMDBC5Block(input, packed);
+	Image_DecompressDXBC5Block(input, packed);
 	for(uint32_t i = 0;i < 4 * 4 * 2; ++i) {
 		output[i] = ((float) packed[i]) / 255.0f;
 	}
 }
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC7BlockF(void const * input,	float output[4 * 4 * 4]) {
+AL2O3_EXTERN_C void Image_DecompressDXBC7BlockF(void const * input,	float output[4 * 4 * 4]) {
 	uint32_t packed[4 * 4];
 
-	Image_DecompressAMDBC7Block(input, packed);
+	Image_DecompressDXBC7Block(input, packed);
 	TinyImageFormat_DecodeInput in = {};
 	in.pixel = packed;
 	TinyImageFormat_DecodeLogicalPixelsF(TinyImageFormat_B8G8R8A8_UNORM, &in, 16, output);

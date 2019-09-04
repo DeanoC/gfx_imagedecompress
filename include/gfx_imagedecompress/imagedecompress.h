@@ -20,16 +20,16 @@ AL2O3_EXTERN_C void Image_DecompressDXBCMultiModeLDRBlock(void const * input, ui
 
 
 // these use the above partial blocks to make up the actual compression formats
-AL2O3_EXTERN_C void Image_DecompressAMDBC1Block(void const * input,	uint32_t output[4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC2Block(void const * input,	uint32_t output[4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC3Block(void const * input,	uint32_t output[4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC4Block(void const * input,	uint8_t output[4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC5Block(void const * input,	uint8_t output[4 * 4 * 2]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC7Block(void const * input,	uint32_t output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC1Block(void const * input,	uint32_t output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC2Block(void const * input,	uint32_t output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC3Block(void const * input,	uint32_t output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC4Block(void const * input,	uint8_t output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC5Block(void const * input,	uint8_t output[4 * 4 * 2]);
+AL2O3_EXTERN_C void Image_DecompressDXBC7Block(void const * input,	uint32_t output[4 * 4]);
 
-AL2O3_EXTERN_C void Image_DecompressAMDBC1BlockF(void const * input,	float output[4 * 4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC2BlockF(void const * input,	float output[4 * 4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC3BlockF(void const * input,	float output[4 * 4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC4BlockF(void const * input,	float output[4 * 4]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC5BlockF(void const * input,	float output[4 * 4 * 2]);
-AL2O3_EXTERN_C void Image_DecompressAMDBC7BlockF(void const * input,	float output[4 * 4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC1BlockF(void const * input,	float output[4 * 4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC2BlockF(void const * input,	float output[4 * 4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC3BlockF(void const * input,	float output[4 * 4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC4BlockF(void const * input,	float output[4 * 4]);
+AL2O3_EXTERN_C void Image_DecompressDXBC5BlockF(void const * input,	float output[4 * 4 * 2]);
+AL2O3_EXTERN_C void Image_DecompressDXBC7BlockF(void const * input,	float output[4 * 4 * 4]);
