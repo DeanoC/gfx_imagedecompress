@@ -24,10 +24,12 @@ set(Interface
 
 set(Src
 		imagedecompress.cpp
+		bc7decompress.cpp
 		)
 
 set(Deps
-    al2o3_platform
+    	al2o3_platform
+		tiny_imageformat
 		)
 ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 
