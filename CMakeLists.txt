@@ -25,6 +25,7 @@ set(Interface
 set(Src
 		imagedecompress.cpp
 		bc7decompress.cpp
+		astcdecompress.cpp
 		)
 
 set(Deps
