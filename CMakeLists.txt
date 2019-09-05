@@ -29,7 +29,9 @@ set(Src
 
 set(Deps
     	al2o3_platform
+		al2o3_cmath
 		tiny_imageformat
+		gfx_image_interface
 		)
 ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 

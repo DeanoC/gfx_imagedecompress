@@ -68,7 +68,7 @@ uint32_t detexBlock128ExtractBits(detexBlock128 *block, int nu_bits) {
 	return value;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetR8(uint32_t pixel) {
+static DETEX_INLINE_ONLY uint32_t detexPixel32GetB8(uint32_t pixel) {
 	return pixel & 0xFF;
 }
 
@@ -76,7 +76,7 @@ static DETEX_INLINE_ONLY uint32_t detexPixel32GetG8(uint32_t pixel) {
 	return (pixel & 0xFF00) >> 8;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetB8(uint32_t pixel) {
+static DETEX_INLINE_ONLY uint32_t detexPixel32GetR8(uint32_t pixel) {
 	return (pixel & 0xFF0000) >> 16;
 }
 
@@ -84,16 +84,16 @@ static DETEX_INLINE_ONLY uint32_t detexPixel32GetA8(uint32_t pixel) {
 	return (pixel & 0xFF000000) >> 24;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32R8(int r) {
-	return (uint32_t) r;
+static DETEX_INLINE_ONLY uint32_t detexPack32B8(int b) {
+	return (uint32_t) b;
 }
 
 static DETEX_INLINE_ONLY uint32_t detexPack32G8(int g) {
 	return (uint32_t) g << 8;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32B8(int b) {
-	return (uint32_t) b << 16;
+static DETEX_INLINE_ONLY uint32_t detexPack32R8(int r) {
+	return (uint32_t) r << 16;
 }
 
 static DETEX_INLINE_ONLY uint32_t detexPack32A8(int a) {
@@ -101,9 +101,9 @@ static DETEX_INLINE_ONLY uint32_t detexPack32A8(int a) {
 }
 
 static DETEX_INLINE_ONLY uint32_t detexPack32RGBA8(int r, int g, int b, int a) {
-	return (uint32_t) r | ((uint32_t) g << 8) | ((uint32_t) b << 16) |
-			((uint32_t) a << 24);
+	return detexPack32R8(r) | detexPack32G8(g) | detexPack32B8(b) | detexPack32A8(a);
 }
+
 
 uint32_t detexBlock128ExtractBits(detexBlock128 *block, int nu_bits);
 
@@ -631,8 +631,8 @@ static bool DecompressBlockBPTCMode1(detexBlock128 *DETEX_RESTRICT block,
 
 /* Decompress a 128-bit 4x4 pixel texture block compressed using the BPTC */
 /* (BC7) format. */
-bool detexDecompressBlockBPTC(const uint8_t *DETEX_RESTRICT bitstring, uint32_t mode_mask,
-															uint32_t flags, uint8_t *DETEX_RESTRICT pixel_buffer) {
+bool detexDecompressBlockBPTC(const uint8_t * bitstring, uint32_t mode_mask,
+															uint32_t flags, uint8_t * pixel_buffer) {
 	detexBlock128 block;
 	block.data0 = *(uint64_t *) &bitstring[0];
 	block.data1 = *(uint64_t *) &bitstring[8];

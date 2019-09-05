@@ -2,6 +2,9 @@
 
 #include "al2o3_platform/platform.h"
 
+// highest level API. If uncompressed return src, null if cant, new image returned if decompressed
+AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const *src);
+
 // lowest level interface block decompression API
 // inputs are normalised float values (0-1 for LDR) in most cases
 // exceptions being HDR and SNORM modes
