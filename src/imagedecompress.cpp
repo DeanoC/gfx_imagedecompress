@@ -309,18 +309,6 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 
 	default: ASSERT(false); return nullptr;
 	}
-
-	Image_ImageHeader const *dst = Image_CreateNoClear(src->width, src->height, 1, src->slices, dstFormat);
-	if (!dst)
-		return nullptr;
-
-	// get block size round up to 4
-	size_t const blocksX = (src->width + TinyImageFormat_WidthOfBlock(src->format)-1) / TinyImageFormat_WidthOfBlock(src->format);
-	size_t const blocksY = (src->height + TinyImageFormat_HeightOfBlock(src->format)-1) / TinyImageFormat_HeightOfBlock(src->format);
-
-	uint64_t compressedBlock[4]; // upto 256 bit block size
-	uint8_t uncompressedBlock[TinyImageFormat_MaxPixelCountOfBlock * 4 * 4 * sizeof(float)];
-
 	auto func = &Image_DecompressDXBC1Block;
 
 	switch (src->format) {
@@ -344,35 +332,77 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 	case TinyImageFormat_DXBC7_UNORM:
 	case TinyImageFormat_DXBC7_SRGB: func = Image_DecompressDXBC7Block;
 		break;
-	case TinyImageFormat_ASTC_4x4_UNORM: func = decompressASTC<4,4,false>; break;
-	case TinyImageFormat_ASTC_5x4_UNORM: func = decompressASTC<5,4,false>; break;
-	case TinyImageFormat_ASTC_5x5_UNORM: func = decompressASTC<5,5,false>; break;
-	case TinyImageFormat_ASTC_6x5_UNORM: func = decompressASTC<6,5,false>; break;
-	case TinyImageFormat_ASTC_6x6_UNORM: func = decompressASTC<6,6,false>; break;
-	case TinyImageFormat_ASTC_8x5_UNORM: func = decompressASTC<8,5,false>; break;
-	case TinyImageFormat_ASTC_8x6_UNORM: func = decompressASTC<8,6,false>; break;
-	case TinyImageFormat_ASTC_8x8_UNORM: func = decompressASTC<8,8,false>; break;
-	case TinyImageFormat_ASTC_10x5_UNORM: func = decompressASTC<10,5,false>; break;
-	case TinyImageFormat_ASTC_10x6_UNORM: func = decompressASTC<10,6,false>; break;
-	case TinyImageFormat_ASTC_10x8_UNORM: func = decompressASTC<10,8,false>; break;
-	case TinyImageFormat_ASTC_10x10_UNORM: func = decompressASTC<10,10,false>; break;
-	case TinyImageFormat_ASTC_12x10_UNORM: func = decompressASTC<12,10,false>; break;
-	case TinyImageFormat_ASTC_12x12_UNORM: func = decompressASTC<12,12,false>; break;
-	case TinyImageFormat_ASTC_4x4_SRGB: func = decompressASTC<4,4,true>; break;
-	case TinyImageFormat_ASTC_5x4_SRGB: func = decompressASTC<5,4,true>; break;
-	case TinyImageFormat_ASTC_5x5_SRGB: func = decompressASTC<5,5,true>; break;
-	case TinyImageFormat_ASTC_6x5_SRGB: func = decompressASTC<6,5,true>; break;
-	case TinyImageFormat_ASTC_6x6_SRGB: func = decompressASTC<6,6,true>; break;
-	case TinyImageFormat_ASTC_8x5_SRGB: func = decompressASTC<8,5,true>; break;
-	case TinyImageFormat_ASTC_8x6_SRGB: func = decompressASTC<8,6,true>; break;
-	case TinyImageFormat_ASTC_8x8_SRGB: func = decompressASTC<8,8,true>; break;
-	case TinyImageFormat_ASTC_10x5_SRGB: func = decompressASTC<10,5,true>; break;
-	case TinyImageFormat_ASTC_10x6_SRGB: func = decompressASTC<10,6,true>; break;
-	case TinyImageFormat_ASTC_10x8_SRGB: func = decompressASTC<10,8,true>; break;
-	case TinyImageFormat_ASTC_10x10_SRGB: func = decompressASTC<10,10,true>; break;
-	case TinyImageFormat_ASTC_12x10_SRGB: func = decompressASTC<12,10,true>; break;
-	case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12,12,true>; break;
+	case TinyImageFormat_ASTC_4x4_UNORM: func = decompressASTC<4, 4, false>;
+		break;
+	case TinyImageFormat_ASTC_5x4_UNORM: func = decompressASTC<5, 4, false>;
+		break;
+	case TinyImageFormat_ASTC_5x5_UNORM: func = decompressASTC<5, 5, false>;
+		break;
+	case TinyImageFormat_ASTC_6x5_UNORM: func = decompressASTC<6, 5, false>;
+		break;
+	case TinyImageFormat_ASTC_6x6_UNORM: func = decompressASTC<6, 6, false>;
+		break;
+	case TinyImageFormat_ASTC_8x5_UNORM: func = decompressASTC<8, 5, false>;
+		break;
+	case TinyImageFormat_ASTC_8x6_UNORM: func = decompressASTC<8, 6, false>;
+		break;
+	case TinyImageFormat_ASTC_8x8_UNORM: func = decompressASTC<8, 8, false>;
+		break;
+	case TinyImageFormat_ASTC_10x5_UNORM: func = decompressASTC<10, 5, false>;
+		break;
+	case TinyImageFormat_ASTC_10x6_UNORM: func = decompressASTC<10, 6, false>;
+		break;
+	case TinyImageFormat_ASTC_10x8_UNORM: func = decompressASTC<10, 8, false>;
+		break;
+	case TinyImageFormat_ASTC_10x10_UNORM: func = decompressASTC<10, 10, false>;
+		break;
+	case TinyImageFormat_ASTC_12x10_UNORM: func = decompressASTC<12, 10, false>;
+		break;
+	case TinyImageFormat_ASTC_12x12_UNORM: func = decompressASTC<12, 12, false>;
+		break;
+	case TinyImageFormat_ASTC_4x4_SRGB: func = decompressASTC<4, 4, true>;
+		break;
+	case TinyImageFormat_ASTC_5x4_SRGB: func = decompressASTC<5, 4, true>;
+		break;
+	case TinyImageFormat_ASTC_5x5_SRGB: func = decompressASTC<5, 5, true>;
+		break;
+	case TinyImageFormat_ASTC_6x5_SRGB: func = decompressASTC<6, 5, true>;
+		break;
+	case TinyImageFormat_ASTC_6x6_SRGB: func = decompressASTC<6, 6, true>;
+		break;
+	case TinyImageFormat_ASTC_8x5_SRGB: func = decompressASTC<8, 5, true>;
+		break;
+	case TinyImageFormat_ASTC_8x6_SRGB: func = decompressASTC<8, 6, true>;
+		break;
+	case TinyImageFormat_ASTC_8x8_SRGB: func = decompressASTC<8, 8, true>;
+		break;
+	case TinyImageFormat_ASTC_10x5_SRGB: func = decompressASTC<10, 5, true>;
+		break;
+	case TinyImageFormat_ASTC_10x6_SRGB: func = decompressASTC<10, 6, true>;
+		break;
+	case TinyImageFormat_ASTC_10x8_SRGB: func = decompressASTC<10, 8, true>;
+		break;
+	case TinyImageFormat_ASTC_10x10_SRGB: func = decompressASTC<10, 10, true>;
+		break;
+	case TinyImageFormat_ASTC_12x10_SRGB: func = decompressASTC<12, 10, true>;
+		break;
+	case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12, 12, true>;
+		break;
+
+	default: return nullptr;
 	}
+
+	Image_ImageHeader const *dst = Image_CreateNoClear(src->width, src->height, 1, src->slices, dstFormat);
+	if (!dst)
+		return nullptr;
+
+	// get block size round up to 4
+	size_t const blocksX = (src->width + TinyImageFormat_WidthOfBlock(src->format)-1) / TinyImageFormat_WidthOfBlock(src->format);
+	size_t const blocksY = (src->height + TinyImageFormat_HeightOfBlock(src->format)-1) / TinyImageFormat_HeightOfBlock(src->format);
+
+	uint64_t compressedBlock[4]; // upto 256 bit block size
+	uint8_t uncompressedBlock[TinyImageFormat_MaxPixelCountOfBlock * 4 * sizeof(float)];
+
 	uint8_t *rawData = (uint8_t *) Image_RawDataPtr(dst);
 
 	uint32_t const dstSize = TinyImageFormat_BitSizeOfBlock(dst->format) / 8;
