@@ -31,6 +31,8 @@ AL2O3_EXTERN_C void Image_DecompressDXBC7Block(void const * input,	uint8_t outpu
 // output has to have 12 * 12 * sizeof(uint32_t) bytes for largest ASTC block
 AL2O3_EXTERN_C void Image_DecompressASTCBlock(void const * input,	uint32_t blockWidth, uint32_t blockHeight, bool isSRGB, uint8_t* output);
 
+AL2O3_EXTERN_C void Image_DecompressETC1Block(void const *input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
+
 AL2O3_EXTERN_C void Image_DecompressDXBC1BlockF(void const * input,	float output[4 * 4 * 4]);
 AL2O3_EXTERN_C void Image_DecompressDXBC2BlockF(void const * input,	float output[4 * 4 * 4]);
 AL2O3_EXTERN_C void Image_DecompressDXBC3BlockF(void const * input,	float output[4 * 4 * 4]);

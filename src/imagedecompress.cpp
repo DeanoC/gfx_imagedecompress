@@ -207,9 +207,6 @@ static void ReadNxNBlock(Image_ImageHeader const *src,
 	memcpy(dstBlockData, srcPtr, blockSize);
 }
 
-static void decompressASTC4x4_UNORM(void const * input,	uint8_t* output) {
-	Image_DecompressASTCBlock(input, 4, 4, false, output);
-}
 template<uint32_t blockX, uint32_t blockY, bool isSRGB>
 static void decompressASTC(void const * input,	uint8_t* output) {
 	Image_DecompressASTCBlock(input, blockX, blockY, isSRGB, output);
@@ -247,7 +244,9 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 	case TinyImageFormat_ASTC_10x10_UNORM:
 	case TinyImageFormat_ASTC_12x10_UNORM:
 	case TinyImageFormat_ASTC_12x12_UNORM:
-		dstFormat = TinyImageFormat_B8G8R8A8_UNORM;
+	case TinyImageFormat_ETC2_R8G8B8_UNORM:
+	case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
+	case TinyImageFormat_ETC2_R8G8B8A8_UNORM: dstFormat = TinyImageFormat_B8G8R8A8_UNORM;
 		break;
 
 	case TinyImageFormat_DXBC1_RGB_SRGB:
@@ -269,7 +268,9 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 	case TinyImageFormat_ASTC_5x5_SRGB:
 	case TinyImageFormat_ASTC_5x4_SRGB:
 	case TinyImageFormat_ASTC_4x4_SRGB:
-		dstFormat = TinyImageFormat_B8G8R8A8_SRGB;
+	case TinyImageFormat_ETC2_R8G8B8_SRGB:
+	case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
+	case TinyImageFormat_ETC2_R8G8B8A8_SRGB: dstFormat = TinyImageFormat_B8G8R8A8_SRGB;
 		break;
 
 	case TinyImageFormat_DXBC4_UNORM: dstFormat = TinyImageFormat_R8_UNORM;
@@ -299,12 +300,6 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 	case TinyImageFormat_PVRTC1_4BPP_SRGB:
 	case TinyImageFormat_PVRTC2_2BPP_SRGB:
 	case TinyImageFormat_PVRTC2_4BPP_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8A8_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8A8_SRGB:
 		return nullptr;
 
 	default: ASSERT(false); return nullptr;
@@ -388,6 +383,13 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 		break;
 	case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12, 12, true>;
 		break;
+		case TinyImageFormat_ETC2_R8G8B8_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A8_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8A8_UNORM: func = Image_DecompressETC1Block;
+			break;
 
 	default: return nullptr;
 	}

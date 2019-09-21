@@ -26,6 +26,7 @@ set(Src
 		imagedecompress.cpp
 		bc7decompress.cpp
 		astcdecompress.cpp
+		etc1decompress.cpp
 		)
 
 set(Deps
