@@ -2,9 +2,11 @@
 // Created by deano on 8/1/2019.
 //
 #include "al2o3_platform/platform.h"
+#include "al2o3_memory/memory.h"
 #include "tiny_imageformat/tinyimageformat_decode.h"
 #include "gfx_image/image.h"
 #include "gfx_imagedecompress/imagedecompress.h"
+
 
 extern bool detexDecompressBlockBPTC(const uint8_t *bitstring, uint32_t mode_mask,
 																		 uint32_t flags, uint8_t *pixel_buffer);
@@ -199,7 +201,7 @@ static void ReadNxNBlock(Image_ImageHeader const *src,
 												 uint32_t maxBlockByteCount,
 												 void *dstBlockData) {
 	uint32_t const blockSize = TinyImageFormat_BitSizeOfBlock(src->format) / 8;
-	ASSERT(blockSize < maxBlockByteCount);
+	ASSERT(blockSize <= maxBlockByteCount);
 	uint8_t *srcData = (uint8_t *) Image_RawDataPtr(src);
 
 	size_t const blockIndex = Image_GetBlockIndex(src, x, y, 0, w);
@@ -402,13 +404,15 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 	size_t const blocksX = (src->width + TinyImageFormat_WidthOfBlock(src->format)-1) / TinyImageFormat_WidthOfBlock(src->format);
 	size_t const blocksY = (src->height + TinyImageFormat_HeightOfBlock(src->format)-1) / TinyImageFormat_HeightOfBlock(src->format);
 
-	uint64_t compressedBlock[4]; // upto 256 bit block size
 	uint8_t uncompressedBlock[TinyImageFormat_MaxPixelCountOfBlock * 4 * sizeof(float)];
 
 	uint8_t *rawData = (uint8_t *) Image_RawDataPtr(dst);
 
+	uint32_t const srcSize = TinyImageFormat_BitSizeOfBlock(src->format) / 8;
 	uint32_t const dstSize = TinyImageFormat_BitSizeOfBlock(dst->format) / 8;
 	uint32_t const dstPitch = TinyImageFormat_WidthOfBlock(src->format) * dstSize;
+
+	uint8_t *compressedBlock = (uint8_t *) STACK_ALLOC(srcSize);
 
 	for (uint32_t w = 0; w < src->slices; ++w) {
 		for (uint32_t y = 0; y < blocksY; ++y) {
@@ -417,8 +421,7 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 				uint32_t const sx = x * TinyImageFormat_WidthOfBlock(src->format);
 				uint32_t const sy = y * TinyImageFormat_HeightOfBlock(src->format);
 
-				ReadNxNBlock(src, sx, sy, w,
-										 sizeof(compressedBlock), compressedBlock);
+				ReadNxNBlock(src, sx, sy, w, srcSize, compressedBlock);
 
 				func(compressedBlock, uncompressedBlock);
 
