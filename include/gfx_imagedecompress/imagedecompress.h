@@ -39,4 +39,3 @@ AL2O3_EXTERN_C void Image_DecompressDXBC3BlockF(void const * input,	float output
 AL2O3_EXTERN_C void Image_DecompressDXBC4BlockF(void const * input,	float output[4 * 4]);
 AL2O3_EXTERN_C void Image_DecompressDXBC5BlockF(void const * input,	float output[4 * 4 * 2]);
 AL2O3_EXTERN_C void Image_DecompressDXBC7BlockF(void const * input,	float output[4 * 4 * 4]);
-

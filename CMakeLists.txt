@@ -28,22 +28,20 @@ set(Src
 		astcdecompress.cpp
 		etc1decompress.cpp
 		)
-
 set(Deps
-    	al2o3_platform
+		al2o3_platform
 		al2o3_memory
 		al2o3_cmath
 		tiny_imageformat
 		gfx_image_interface
 		)
+
 ADD_LIB(${LibName} "${Interface}" "${Src}" "${Deps}")
 
-set( Tests
+set(Tests
 		runner.cpp
 		)
-set( TestDeps
+set(TestDeps
 		al2o3_catch2
-
 		utils_simple_logmanager)
 ADD_LIB_TESTS(${LibName} "${Interface}" "${Tests}" "${TestDeps}")
-
