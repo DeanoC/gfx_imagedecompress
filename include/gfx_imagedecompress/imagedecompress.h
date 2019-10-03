@@ -34,11 +34,11 @@ AL2O3_EXTERN_C void Image_DecompressASTCBlock(void const * input,	uint32_t block
 AL2O3_EXTERN_C void Image_DecompressETC1Block(void const * input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
 AL2O3_EXTERN_C void Image_DecompressETC2Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
 AL2O3_EXTERN_C void Image_DecompressETC2PunchThroughBlock(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
-AL2O3_EXTERN_C void Image_DecompressETC2EACBlock(void const * input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
-AL2O3_EXTERN_C void Image_DecompressEACSigned11Block(void const * input, uint8_t output[4 * 4 * sizeof(int16_t)]);
-AL2O3_EXTERN_C void Image_DecompressEACDualSigned11Block(void const * input, uint8_t output[4 * 4 * sizeof(int16_t) * 2]);
-AL2O3_EXTERN_C void Image_DecompressEAC11Block(void const * input, uint8_t output[4 * 4 * sizeof(uint16_t)]);
-AL2O3_EXTERN_C void Image_DecompressEACDual11Block(void const * input, uint8_t output[4 * 4 * sizeof(uint16_t) * 2]);
+AL2O3_EXTERN_C void Image_DecompressETC2EACBlock(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
+AL2O3_EXTERN_C void Image_DecompressEACSigned11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(int16_t)]);
+AL2O3_EXTERN_C void Image_DecompressEACDualSigned11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(int16_t) * 2]);
+AL2O3_EXTERN_C void Image_DecompressEAC11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint16_t)]);
+AL2O3_EXTERN_C void Image_DecompressEACDual11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint16_t) * 2]);
 
 AL2O3_EXTERN_C void Image_DecompressDXBC1BlockF(void const * input,	float output[4 * 4 * 4]);
 AL2O3_EXTERN_C void Image_DecompressDXBC2BlockF(void const * input,	float output[4 * 4 * 4]);
