@@ -198,7 +198,7 @@ static AL2O3_FORCE_INLINE bool DecodeBlockEACSigned11Bit(uint64_t qword, int shi
 
 /* Decompress a 64-bit 4x4 pixel texture block compressed using the */
 /* EAC_SIGNED_R11 format. */
-bool detexDecompressBlockEAC_SIGNED_R11(const uint8_t * AL2O3_RESTRICT bitstring, uint8_t * AL2O3_RESTRICT pixel_buffer) {
+bool detexDecompressBlockEAC_SIGNED_R11(const uint8_t *AL2O3_RESTRICT bitstring, uint8_t * AL2O3_RESTRICT pixel_buffer) {
 	uint64_t qword = ((uint64_t)bitstring[0] << 56) | ((uint64_t)bitstring[1] << 48) |
 			((uint64_t)bitstring[2] << 40) |
 			((uint64_t)bitstring[3] << 32) | ((uint64_t)bitstring[4] << 24) |
@@ -208,7 +208,7 @@ bool detexDecompressBlockEAC_SIGNED_R11(const uint8_t * AL2O3_RESTRICT bitstring
 
 /* Decompress a 128-bit 4x4 pixel texture block compressed using the */
 /* EAC_SIGNED_RG11 format. */
-bool detexDecompressBlockEAC_SIGNED_RG11(const uint8_t * AL2O3_RESTRICT bitstring, uint8_t * AL2O3_RESTRICT pixel_buffer) {
+bool detexDecompressBlockEAC_SIGNED_RG11(const uint8_t *AL2O3_RESTRICT bitstring, uint8_t * AL2O3_RESTRICT pixel_buffer) {
 	uint64_t red_qword = ((uint64_t)bitstring[0] << 56) | ((uint64_t)bitstring[1] << 48) |
 			((uint64_t)bitstring[2] << 40) |
 			((uint64_t)bitstring[3] << 32) | ((uint64_t)bitstring[4] << 24) |
@@ -223,21 +223,21 @@ bool detexDecompressBlockEAC_SIGNED_RG11(const uint8_t * AL2O3_RESTRICT bitstrin
 	return DecodeBlockEACSigned11Bit(green_qword, 1, 1, pixel_buffer);
 }
 
-AL2O3_EXTERN_C void Image_DecompressEACSigned11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(int16_t)]) {
+AL2O3_EXTERN_C void Image_DecompressEACSigned11Block(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(int16_t)]) {
 	detexDecompressBlockEAC_SIGNED_R11((uint8_t const*)input,output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressEACDualSigned11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(int16_t) * 2]) {
+AL2O3_EXTERN_C void Image_DecompressEACDualSigned11Block(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(int16_t) * 2]) {
 	detexDecompressBlockEAC_SIGNED_RG11((uint8_t const*)input, output);
 }
-AL2O3_EXTERN_C void Image_DecompressEAC11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint16_t)]) {
+AL2O3_EXTERN_C void Image_DecompressEAC11Block(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(uint16_t)]) {
 	detexDecompressBlockEAC_R11((uint8_t const*)input,output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressEACDual11Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint16_t) * 2]) {
+AL2O3_EXTERN_C void Image_DecompressEACDual11Block(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(uint16_t) * 2]) {
 	detexDecompressBlockEAC_RG11((uint8_t const*)input, output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressETC2EACBlock(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
+AL2O3_EXTERN_C void Image_DecompressETC2EACBlock(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
 	detexDecompressBlockETC2_EAC((uint8_t const*)input, output);
 }
