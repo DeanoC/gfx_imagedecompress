@@ -19,15 +19,6 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "al2o3_platform/platform.h"
 
-// TODO take these from platform
-#ifdef _MSC_VER
-#define DETEX_INLINE_ONLY __forceinline
-#define DETEX_RESTRICT __restrict
-#else
-#define DETEX_INLINE_ONLY
-#define DETEX_RESTRICT
-#endif
-
 enum {
 	/* For compression formats that have opaque and non-opaque modes, */
 	/* return false (invalid block) when the compressed block is encoded */
@@ -68,39 +59,39 @@ uint32_t detexBlock128ExtractBits(detexBlock128 *block, int nu_bits) {
 	return value;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetB8(uint32_t pixel) {
+static AL2O3_FORCE_INLINE uint32_t detexPixel32GetB8(uint32_t pixel) {
 	return pixel & 0xFF;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetG8(uint32_t pixel) {
+static AL2O3_FORCE_INLINE uint32_t detexPixel32GetG8(uint32_t pixel) {
 	return (pixel & 0xFF00) >> 8;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetR8(uint32_t pixel) {
+static AL2O3_FORCE_INLINE uint32_t detexPixel32GetR8(uint32_t pixel) {
 	return (pixel & 0xFF0000) >> 16;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPixel32GetA8(uint32_t pixel) {
+static AL2O3_FORCE_INLINE uint32_t detexPixel32GetA8(uint32_t pixel) {
 	return (pixel & 0xFF000000) >> 24;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32B8(int b) {
+static AL2O3_FORCE_INLINE uint32_t detexPack32B8(int b) {
 	return (uint32_t) b;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32G8(int g) {
+static AL2O3_FORCE_INLINE uint32_t detexPack32G8(int g) {
 	return (uint32_t) g << 8;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32R8(int r) {
+static AL2O3_FORCE_INLINE uint32_t detexPack32R8(int r) {
 	return (uint32_t) r << 16;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32A8(int a) {
+static AL2O3_FORCE_INLINE uint32_t detexPack32A8(int a) {
 	return (uint32_t) a << 24;
 }
 
-static DETEX_INLINE_ONLY uint32_t detexPack32RGBA8(int r, int g, int b, int a) {
+static AL2O3_FORCE_INLINE uint32_t detexPack32RGBA8(int r, int g, int b, int a) {
 	return detexPack32R8(r) | detexPack32G8(g) | detexPack32B8(b) | detexPack32A8(a);
 }
 
@@ -108,7 +99,7 @@ static DETEX_INLINE_ONLY uint32_t detexPack32RGBA8(int r, int g, int b, int a) {
 uint32_t detexBlock128ExtractBits(detexBlock128 *block, int nu_bits);
 
 /* Return bitfield from bit0 to bit1 from 64-bit bitstring. */
-static DETEX_INLINE_ONLY uint32_t detexGetBits64(uint64_t data, int bit0, int bit1) {
+static AL2O3_FORCE_INLINE uint32_t detexGetBits64(uint64_t data, int bit0, int bit1) {
 	uint64_t mask;
 	if (bit1 == 63)
 		mask = UINT64_MAX;
@@ -327,11 +318,11 @@ static const uint8_t color_precision_table[8] = {4, 6, 5, 7, 5, 7, 7, 5};
 // Note: precision includes P-bits!
 static const uint8_t color_precision_plus_pbit_table[8] = {5, 7, 5, 8, 5, 7, 8, 6};
 
-static DETEX_INLINE_ONLY uint8_t GetColorComponentPrecision(int mode) {
+static AL2O3_FORCE_INLINE uint8_t GetColorComponentPrecision(int mode) {
 	return color_precision_table[mode];
 }
 
-static DETEX_INLINE_ONLY uint8_t GetColorComponentPrecisionPlusPbit(int mode) {
+static AL2O3_FORCE_INLINE uint8_t GetColorComponentPrecisionPlusPbit(int mode) {
 	return color_precision_plus_pbit_table[mode];
 }
 
@@ -340,19 +331,19 @@ static const int8_t alpha_precision_table[8] = {0, 0, 0, 0, 6, 8, 7, 5};
 // Note: precision include P-bits!
 static const uint8_t alpha_precision_plus_pbit_table[8] = {0, 0, 0, 0, 6, 8, 8, 6};
 
-static DETEX_INLINE_ONLY uint8_t GetAlphaComponentPrecision(int mode) {
+static AL2O3_FORCE_INLINE uint8_t GetAlphaComponentPrecision(int mode) {
 	return alpha_precision_table[mode];
 }
 
-static DETEX_INLINE_ONLY uint8_t GetAlphaComponentPrecisionPlusPbit(int mode) {
+static AL2O3_FORCE_INLINE uint8_t GetAlphaComponentPrecisionPlusPbit(int mode) {
 	return alpha_precision_plus_pbit_table[mode];
 }
 
 static const int8_t components_in_qword0_table[8] = {2, -1, 1, 1, 3, 3, 3, 2};
 
 /* Extract endpoint colors. */
-static void ExtractEndpoints(int mode, int nu_subsets, detexBlock128 *DETEX_RESTRICT block,
-														 uint8_t *DETEX_RESTRICT endpoint_array) {
+static void ExtractEndpoints(int mode, int nu_subsets, detexBlock128 *AL2O3_RESTRICT block,
+														 uint8_t *AL2O3_RESTRICT endpoint_array) {
 	// Optimized version avoiding the use of block_extract_bits().
 	int components_in_qword0 = components_in_qword0_table[mode];
 	uint64_t data = block->data0 >> block->index;
@@ -413,8 +404,8 @@ static void ExtractEndpoints(int mode, int nu_subsets, detexBlock128 *DETEX_REST
 
 static const uint8_t mode_has_p_bits[8] = {1, 1, 0, 1, 0, 0, 1, 1};
 
-static void FullyDecodeEndpoints(uint8_t *DETEX_RESTRICT endpoint_array, int nu_subsets,
-																 int mode, detexBlock128 *DETEX_RESTRICT block) {
+static void FullyDecodeEndpoints(uint8_t *AL2O3_RESTRICT endpoint_array, int nu_subsets,
+																 int mode, detexBlock128 *AL2O3_RESTRICT block) {
 	if (mode_has_p_bits[mode]) {
 		// Mode 1 (shared P-bits) handled elsewhere.
 		// Extract end-point P-bits.
@@ -475,33 +466,33 @@ static uint8_t Interpolate(uint8_t e0, uint8_t e1, uint8_t index, uint8_t indexp
 
 static const uint8_t bptc_color_index_bitcount[8] = {3, 3, 2, 2, 2, 2, 4, 2};
 
-static DETEX_INLINE_ONLY int GetColorIndexBitcount(int mode, int index_selection_bit) {
+static AL2O3_FORCE_INLINE int GetColorIndexBitcount(int mode, int index_selection_bit) {
 	// If the index selection bit is set for mode 4, return 3, otherwise 2.
 	return bptc_color_index_bitcount[mode] + index_selection_bit;
 }
 
 static uint8_t bptc_alpha_index_bitcount[8] = {3, 3, 2, 2, 3, 2, 4, 2};
 
-static DETEX_INLINE_ONLY int GetAlphaIndexBitcount(int mode, int index_selection_bit) {
+static AL2O3_FORCE_INLINE int GetAlphaIndexBitcount(int mode, int index_selection_bit) {
 	// If the index selection bit is set for mode 4, return 2, otherwise 3.
 	return bptc_alpha_index_bitcount[mode] - index_selection_bit;
 }
 
 static const uint8_t bptc_NS[8] = {3, 2, 3, 2, 1, 1, 1, 2};
 
-static DETEX_INLINE_ONLY int GetNumberOfSubsets(int mode) {
+static AL2O3_FORCE_INLINE int GetNumberOfSubsets(int mode) {
 	return bptc_NS[mode];
 }
 
 static const uint8_t PB[8] = {4, 6, 6, 6, 0, 0, 0, 6};
 
-static DETEX_INLINE_ONLY int GetNumberOfPartitionBits(int mode) {
+static AL2O3_FORCE_INLINE int GetNumberOfPartitionBits(int mode) {
 	return PB[mode];
 }
 
 static const uint8_t RB[8] = {0, 0, 0, 0, 2, 2, 0, 0};
 
-static DETEX_INLINE_ONLY int GetNumberOfRotationBits(int mode) {
+static AL2O3_FORCE_INLINE int GetNumberOfRotationBits(int mode) {
 	return RB[mode];
 }
 
@@ -517,11 +508,11 @@ static int ExtractMode(detexBlock128 *block) {
 	return -1;
 }
 
-static DETEX_INLINE_ONLY int ExtractPartitionSetID(detexBlock128 *block, int mode) {
+static AL2O3_FORCE_INLINE int ExtractPartitionSetID(detexBlock128 *block, int mode) {
 	return detexBlock128ExtractBits(block, GetNumberOfPartitionBits(mode));
 }
 
-static DETEX_INLINE_ONLY int GetPartitionIndex(int nu_subsets, int partition_set_id, int i) {
+static AL2O3_FORCE_INLINE int GetPartitionIndex(int nu_subsets, int partition_set_id, int i) {
 	if (nu_subsets == 1)
 		return 0;
 	if (nu_subsets == 2)
@@ -529,11 +520,11 @@ static DETEX_INLINE_ONLY int GetPartitionIndex(int nu_subsets, int partition_set
 	return detex_bptc_table_P3[partition_set_id * 16 + i];
 }
 
-static DETEX_INLINE_ONLY int ExtractRotationBits(detexBlock128 *block, int mode) {
+static AL2O3_FORCE_INLINE int ExtractRotationBits(detexBlock128 *block, int mode) {
 	return detexBlock128ExtractBits(block, GetNumberOfRotationBits(mode));
 }
 
-static DETEX_INLINE_ONLY int GetAnchorIndex(int partition_set_id, int partition, int nu_subsets) {
+static AL2O3_FORCE_INLINE int GetAnchorIndex(int partition_set_id, int partition, int nu_subsets) {
 	if (partition == 0)
 		return 0;
 	if (nu_subsets == 2)
@@ -549,8 +540,8 @@ static const uint8_t mode_has_partition_bits[8] = {1, 1, 1, 1, 0, 0, 0, 1};
 
 /* Decompress a 128-bit 4x4 pixel texture block compressed using BPTC mode 1. */
 
-static bool DecompressBlockBPTCMode1(detexBlock128 *DETEX_RESTRICT block,
-																		 uint8_t *DETEX_RESTRICT pixel_buffer) {
+static bool DecompressBlockBPTCMode1(detexBlock128 *AL2O3_RESTRICT block,
+																		 uint8_t *AL2O3_RESTRICT pixel_buffer) {
 	uint64_t data0 = block->data0;
 	uint64_t data1 = block->data1;
 	int partition_set_id = detexGetBits64(data0, 2, 7);
@@ -631,22 +622,12 @@ static bool DecompressBlockBPTCMode1(detexBlock128 *DETEX_RESTRICT block,
 
 /* Decompress a 128-bit 4x4 pixel texture block compressed using the BPTC */
 /* (BC7) format. */
-bool detexDecompressBlockBPTC(const uint8_t * bitstring, uint32_t mode_mask,
-															uint32_t flags, uint8_t * pixel_buffer) {
+bool detexDecompressBlockBPTC(const uint8_t * bitstring, uint8_t * pixel_buffer) {
 	detexBlock128 block;
 	block.data0 = *(uint64_t *) &bitstring[0];
 	block.data1 = *(uint64_t *) &bitstring[8];
 	block.index = 0;
 	int mode = ExtractMode(&block);
-	if (mode == -1)
-		return 0;
-	// Allow compression tied to specific modes (according to mode_mask).
-	if (!(mode_mask & ((int) 1 << mode)))
-		return 0;
-	if (mode >= 4 && (flags & DETEX_DECOMPRESS_FLAG_OPAQUE_ONLY))
-		return 0;
-	if (mode < 4 && (flags & DETEX_DECOMPRESS_FLAG_NON_OPAQUE_ONLY))
-		return 0;
 	if (mode == 1)
 		return DecompressBlockBPTCMode1(&block, pixel_buffer);
 

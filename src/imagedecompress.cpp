@@ -7,9 +7,7 @@
 #include "gfx_image/image.h"
 #include "gfx_imagedecompress/imagedecompress.h"
 
-
-extern bool detexDecompressBlockBPTC(const uint8_t *bitstring, uint32_t mode_mask,
-																		 uint32_t flags, uint8_t *pixel_buffer);
+extern bool detexDecompressBlockBPTC(const uint8_t *bitstring, uint8_t *pixel_buffer);
 
 void GetCompressedAlphaRamp(uint8_t alpha[8]) {
 	if (alpha[0] > alpha[1]) {
@@ -112,7 +110,7 @@ AL2O3_EXTERN_C void Image_DecompressDXBCAlphaSingleModeBlock(void const *input, 
 }
 
 AL2O3_EXTERN_C void Image_DecompressDXBCMultiModeLDRBlock(void const *input, uint32_t output[4 * 4]) {
-	detexDecompressBlockBPTC((uint8_t const *) input, 0xFF, 0, (uint8_t *) output);
+	detexDecompressBlockBPTC((uint8_t const *) input, (uint8_t *) output);
 }
 
 
@@ -210,199 +208,223 @@ static void ReadNxNBlock(Image_ImageHeader const *src,
 }
 
 template<uint32_t blockX, uint32_t blockY, bool isSRGB>
-static void decompressASTC(void const * input,	uint8_t* output) {
+static void decompressASTC(void const *input, uint8_t *output) {
 	Image_DecompressASTCBlock(input, blockX, blockY, isSRGB, output);
 }
 
-
 AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const *src) {
-	if (src->depth > 1)
+	if (src->depth > 1) {
 		return nullptr;
+	}
 
-	if (!TinyImageFormat_IsCompressed(src->format))
+	if (!TinyImageFormat_IsCompressed(src->format)) {
 		return src;
+	}
 
 	bool const sRGB = TinyImageFormat_IsSRGB(src->format);
 
 	TinyImageFormat dstFormat = TinyImageFormat_UNDEFINED;
 
 	switch (src->format) {
-	case TinyImageFormat_DXBC1_RGB_UNORM:
-	case TinyImageFormat_DXBC1_RGBA_UNORM:
-	case TinyImageFormat_DXBC2_UNORM:
-	case TinyImageFormat_DXBC3_UNORM:
-	case TinyImageFormat_DXBC7_UNORM:
-	case TinyImageFormat_ASTC_4x4_UNORM:
-	case TinyImageFormat_ASTC_5x4_UNORM:
-	case TinyImageFormat_ASTC_5x5_UNORM:
-	case TinyImageFormat_ASTC_6x5_UNORM:
-	case TinyImageFormat_ASTC_6x6_UNORM:
-	case TinyImageFormat_ASTC_8x5_UNORM:
-	case TinyImageFormat_ASTC_8x6_UNORM:
-	case TinyImageFormat_ASTC_8x8_UNORM:
-	case TinyImageFormat_ASTC_10x5_UNORM:
-	case TinyImageFormat_ASTC_10x6_UNORM:
-	case TinyImageFormat_ASTC_10x8_UNORM:
-	case TinyImageFormat_ASTC_10x10_UNORM:
-	case TinyImageFormat_ASTC_12x10_UNORM:
-	case TinyImageFormat_ASTC_12x12_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
-	case TinyImageFormat_ETC2_R8G8B8A8_UNORM: dstFormat = TinyImageFormat_B8G8R8A8_UNORM;
-		break;
+		case TinyImageFormat_DXBC1_RGB_UNORM:
+		case TinyImageFormat_DXBC1_RGBA_UNORM:
+		case TinyImageFormat_DXBC2_UNORM:
+		case TinyImageFormat_DXBC3_UNORM:
+		case TinyImageFormat_DXBC7_UNORM:
+		case TinyImageFormat_ASTC_4x4_UNORM:
+		case TinyImageFormat_ASTC_5x4_UNORM:
+		case TinyImageFormat_ASTC_5x5_UNORM:
+		case TinyImageFormat_ASTC_6x5_UNORM:
+		case TinyImageFormat_ASTC_6x6_UNORM:
+		case TinyImageFormat_ASTC_8x5_UNORM:
+		case TinyImageFormat_ASTC_8x6_UNORM:
+		case TinyImageFormat_ASTC_8x8_UNORM:
+		case TinyImageFormat_ASTC_10x5_UNORM:
+		case TinyImageFormat_ASTC_10x6_UNORM:
+		case TinyImageFormat_ASTC_10x8_UNORM:
+		case TinyImageFormat_ASTC_10x10_UNORM:
+		case TinyImageFormat_ASTC_12x10_UNORM:
+		case TinyImageFormat_ASTC_12x12_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8A8_UNORM: dstFormat = TinyImageFormat_B8G8R8A8_UNORM;
+			break;
 
-	case TinyImageFormat_DXBC1_RGB_SRGB:
-	case TinyImageFormat_DXBC1_RGBA_SRGB:
-	case TinyImageFormat_DXBC2_SRGB:
-	case TinyImageFormat_DXBC3_SRGB:
-	case TinyImageFormat_DXBC7_SRGB:
-	case TinyImageFormat_ASTC_12x12_SRGB:
-	case TinyImageFormat_ASTC_12x10_SRGB:
-	case TinyImageFormat_ASTC_10x10_SRGB:
-	case TinyImageFormat_ASTC_10x8_SRGB:
-	case TinyImageFormat_ASTC_10x6_SRGB:
-	case TinyImageFormat_ASTC_10x5_SRGB:
-	case TinyImageFormat_ASTC_8x8_SRGB:
-	case TinyImageFormat_ASTC_8x6_SRGB:
-	case TinyImageFormat_ASTC_8x5_SRGB:
-	case TinyImageFormat_ASTC_6x6_SRGB:
-	case TinyImageFormat_ASTC_6x5_SRGB:
-	case TinyImageFormat_ASTC_5x5_SRGB:
-	case TinyImageFormat_ASTC_5x4_SRGB:
-	case TinyImageFormat_ASTC_4x4_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
-	case TinyImageFormat_ETC2_R8G8B8A8_SRGB: dstFormat = TinyImageFormat_B8G8R8A8_SRGB;
-		break;
+		case TinyImageFormat_DXBC1_RGB_SRGB:
+		case TinyImageFormat_DXBC1_RGBA_SRGB:
+		case TinyImageFormat_DXBC2_SRGB:
+		case TinyImageFormat_DXBC3_SRGB:
+		case TinyImageFormat_DXBC7_SRGB:
+		case TinyImageFormat_ASTC_12x12_SRGB:
+		case TinyImageFormat_ASTC_12x10_SRGB:
+		case TinyImageFormat_ASTC_10x10_SRGB:
+		case TinyImageFormat_ASTC_10x8_SRGB:
+		case TinyImageFormat_ASTC_10x6_SRGB:
+		case TinyImageFormat_ASTC_10x5_SRGB:
+		case TinyImageFormat_ASTC_8x8_SRGB:
+		case TinyImageFormat_ASTC_8x6_SRGB:
+		case TinyImageFormat_ASTC_8x5_SRGB:
+		case TinyImageFormat_ASTC_6x6_SRGB:
+		case TinyImageFormat_ASTC_6x5_SRGB:
+		case TinyImageFormat_ASTC_5x5_SRGB:
+		case TinyImageFormat_ASTC_5x4_SRGB:
+		case TinyImageFormat_ASTC_4x4_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A8_SRGB: dstFormat = TinyImageFormat_B8G8R8A8_SRGB;
+			break;
 
-	case TinyImageFormat_DXBC4_UNORM: dstFormat = TinyImageFormat_R8_UNORM;
-		break;
-	case TinyImageFormat_DXBC4_SNORM: dstFormat = TinyImageFormat_R8_SNORM;
-		break;
+		case TinyImageFormat_DXBC4_UNORM: dstFormat = TinyImageFormat_R8_UNORM;
+			break;
+		case TinyImageFormat_DXBC4_SNORM: dstFormat = TinyImageFormat_R8_SNORM;
+			break;
 
-	case TinyImageFormat_DXBC5_UNORM: dstFormat = TinyImageFormat_R8G8_UNORM;
-		break;
-	case TinyImageFormat_DXBC5_SNORM: dstFormat = TinyImageFormat_R8G8_SNORM;
-		break;
+		case TinyImageFormat_DXBC5_UNORM: dstFormat = TinyImageFormat_R8G8_UNORM;
+			break;
+		case TinyImageFormat_DXBC5_SNORM: dstFormat = TinyImageFormat_R8G8_SNORM;
+			break;
 
-	case TinyImageFormat_ETC2_EAC_R11_UNORM:
-	case TinyImageFormat_ETC2_EAC_R11_SNORM: return nullptr;
+		case TinyImageFormat_ETC2_EAC_R11_UNORM:dstFormat = TinyImageFormat_R16_UNORM;
+			break;
+		case TinyImageFormat_ETC2_EAC_R11_SNORM: dstFormat = TinyImageFormat_R16_SNORM;
+			break;
 
-	case TinyImageFormat_ETC2_EAC_R11G11_UNORM:
-	case TinyImageFormat_ETC2_EAC_R11G11_SNORM: return nullptr;
+		case TinyImageFormat_ETC2_EAC_R11G11_UNORM:dstFormat = TinyImageFormat_R16G16_UNORM;
+			break;
+		case TinyImageFormat_ETC2_EAC_R11G11_SNORM: dstFormat = TinyImageFormat_R16G16_SNORM;
+			break;
 
-	case TinyImageFormat_DXBC6H_UFLOAT:
-	case TinyImageFormat_DXBC6H_SFLOAT: return nullptr;
+		case TinyImageFormat_DXBC6H_UFLOAT:
+		case TinyImageFormat_DXBC6H_SFLOAT: return nullptr;
 
-	case TinyImageFormat_PVRTC1_2BPP_UNORM:
-	case TinyImageFormat_PVRTC1_4BPP_UNORM:
-	case TinyImageFormat_PVRTC2_2BPP_UNORM:
-	case TinyImageFormat_PVRTC2_4BPP_UNORM:
-	case TinyImageFormat_PVRTC1_2BPP_SRGB:
-	case TinyImageFormat_PVRTC1_4BPP_SRGB:
-	case TinyImageFormat_PVRTC2_2BPP_SRGB:
-	case TinyImageFormat_PVRTC2_4BPP_SRGB:
-		return nullptr;
+		case TinyImageFormat_PVRTC1_2BPP_UNORM:
+		case TinyImageFormat_PVRTC1_4BPP_UNORM:
+		case TinyImageFormat_PVRTC2_2BPP_UNORM:
+		case TinyImageFormat_PVRTC2_4BPP_UNORM:
+		case TinyImageFormat_PVRTC1_2BPP_SRGB:
+		case TinyImageFormat_PVRTC1_4BPP_SRGB:
+		case TinyImageFormat_PVRTC2_2BPP_SRGB:
+		case TinyImageFormat_PVRTC2_4BPP_SRGB: return nullptr;
 
-	default: ASSERT(false); return nullptr;
+		default: ASSERT(false);
+			return nullptr;
 	}
 	auto func = &Image_DecompressDXBC1Block;
 
 	switch (src->format) {
-	case TinyImageFormat_DXBC1_RGB_UNORM:
-	case TinyImageFormat_DXBC1_RGBA_UNORM:
-	case TinyImageFormat_DXBC1_RGB_SRGB:
-	case TinyImageFormat_DXBC1_RGBA_SRGB: func = Image_DecompressDXBC1Block;
-		break;
-	case TinyImageFormat_DXBC2_UNORM:
-	case TinyImageFormat_DXBC2_SRGB: func = Image_DecompressDXBC2Block;
-		break;
-	case TinyImageFormat_DXBC3_UNORM:
-	case TinyImageFormat_DXBC3_SRGB: func = Image_DecompressDXBC3Block;
-		break;
-	case TinyImageFormat_DXBC4_UNORM:
-	case TinyImageFormat_DXBC4_SNORM: func = Image_DecompressDXBC4Block;
-		break;
-	case TinyImageFormat_DXBC5_UNORM:
-	case TinyImageFormat_DXBC5_SNORM: func = Image_DecompressDXBC5Block;
-		break;
-	case TinyImageFormat_DXBC7_UNORM:
-	case TinyImageFormat_DXBC7_SRGB: func = Image_DecompressDXBC7Block;
-		break;
-	case TinyImageFormat_ASTC_4x4_UNORM: func = decompressASTC<4, 4, false>;
-		break;
-	case TinyImageFormat_ASTC_5x4_UNORM: func = decompressASTC<5, 4, false>;
-		break;
-	case TinyImageFormat_ASTC_5x5_UNORM: func = decompressASTC<5, 5, false>;
-		break;
-	case TinyImageFormat_ASTC_6x5_UNORM: func = decompressASTC<6, 5, false>;
-		break;
-	case TinyImageFormat_ASTC_6x6_UNORM: func = decompressASTC<6, 6, false>;
-		break;
-	case TinyImageFormat_ASTC_8x5_UNORM: func = decompressASTC<8, 5, false>;
-		break;
-	case TinyImageFormat_ASTC_8x6_UNORM: func = decompressASTC<8, 6, false>;
-		break;
-	case TinyImageFormat_ASTC_8x8_UNORM: func = decompressASTC<8, 8, false>;
-		break;
-	case TinyImageFormat_ASTC_10x5_UNORM: func = decompressASTC<10, 5, false>;
-		break;
-	case TinyImageFormat_ASTC_10x6_UNORM: func = decompressASTC<10, 6, false>;
-		break;
-	case TinyImageFormat_ASTC_10x8_UNORM: func = decompressASTC<10, 8, false>;
-		break;
-	case TinyImageFormat_ASTC_10x10_UNORM: func = decompressASTC<10, 10, false>;
-		break;
-	case TinyImageFormat_ASTC_12x10_UNORM: func = decompressASTC<12, 10, false>;
-		break;
-	case TinyImageFormat_ASTC_12x12_UNORM: func = decompressASTC<12, 12, false>;
-		break;
-	case TinyImageFormat_ASTC_4x4_SRGB: func = decompressASTC<4, 4, true>;
-		break;
-	case TinyImageFormat_ASTC_5x4_SRGB: func = decompressASTC<5, 4, true>;
-		break;
-	case TinyImageFormat_ASTC_5x5_SRGB: func = decompressASTC<5, 5, true>;
-		break;
-	case TinyImageFormat_ASTC_6x5_SRGB: func = decompressASTC<6, 5, true>;
-		break;
-	case TinyImageFormat_ASTC_6x6_SRGB: func = decompressASTC<6, 6, true>;
-		break;
-	case TinyImageFormat_ASTC_8x5_SRGB: func = decompressASTC<8, 5, true>;
-		break;
-	case TinyImageFormat_ASTC_8x6_SRGB: func = decompressASTC<8, 6, true>;
-		break;
-	case TinyImageFormat_ASTC_8x8_SRGB: func = decompressASTC<8, 8, true>;
-		break;
-	case TinyImageFormat_ASTC_10x5_SRGB: func = decompressASTC<10, 5, true>;
-		break;
-	case TinyImageFormat_ASTC_10x6_SRGB: func = decompressASTC<10, 6, true>;
-		break;
-	case TinyImageFormat_ASTC_10x8_SRGB: func = decompressASTC<10, 8, true>;
-		break;
-	case TinyImageFormat_ASTC_10x10_SRGB: func = decompressASTC<10, 10, true>;
-		break;
-	case TinyImageFormat_ASTC_12x10_SRGB: func = decompressASTC<12, 10, true>;
-		break;
-	case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12, 12, true>;
-		break;
-		case TinyImageFormat_ETC2_R8G8B8_SRGB:
-		case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
-		case TinyImageFormat_ETC2_R8G8B8A8_SRGB:
-		case TinyImageFormat_ETC2_R8G8B8_UNORM:
-		case TinyImageFormat_ETC2_R8G8B8A1_UNORM:
-		case TinyImageFormat_ETC2_R8G8B8A8_UNORM: func = Image_DecompressETC1Block;
+		case TinyImageFormat_DXBC1_RGB_UNORM:
+		case TinyImageFormat_DXBC1_RGBA_UNORM:
+		case TinyImageFormat_DXBC1_RGB_SRGB:
+		case TinyImageFormat_DXBC1_RGBA_SRGB: func = Image_DecompressDXBC1Block;
+			break;
+		case TinyImageFormat_DXBC2_UNORM:
+		case TinyImageFormat_DXBC2_SRGB: func = Image_DecompressDXBC2Block;
+			break;
+		case TinyImageFormat_DXBC3_UNORM:
+		case TinyImageFormat_DXBC3_SRGB: func = Image_DecompressDXBC3Block;
+			break;
+		case TinyImageFormat_DXBC4_UNORM:
+		case TinyImageFormat_DXBC4_SNORM: func = Image_DecompressDXBC4Block;
+			break;
+		case TinyImageFormat_DXBC5_UNORM:
+		case TinyImageFormat_DXBC5_SNORM: func = Image_DecompressDXBC5Block;
+			break;
+		case TinyImageFormat_DXBC7_UNORM:
+		case TinyImageFormat_DXBC7_SRGB: func = Image_DecompressDXBC7Block;
+			break;
+		case TinyImageFormat_ASTC_4x4_UNORM: func = decompressASTC<4, 4, false>;
+			break;
+		case TinyImageFormat_ASTC_5x4_UNORM: func = decompressASTC<5, 4, false>;
+			break;
+		case TinyImageFormat_ASTC_5x5_UNORM: func = decompressASTC<5, 5, false>;
+			break;
+		case TinyImageFormat_ASTC_6x5_UNORM: func = decompressASTC<6, 5, false>;
+			break;
+		case TinyImageFormat_ASTC_6x6_UNORM: func = decompressASTC<6, 6, false>;
+			break;
+		case TinyImageFormat_ASTC_8x5_UNORM: func = decompressASTC<8, 5, false>;
+			break;
+		case TinyImageFormat_ASTC_8x6_UNORM: func = decompressASTC<8, 6, false>;
+			break;
+		case TinyImageFormat_ASTC_8x8_UNORM: func = decompressASTC<8, 8, false>;
+			break;
+		case TinyImageFormat_ASTC_10x5_UNORM: func = decompressASTC<10, 5, false>;
+			break;
+		case TinyImageFormat_ASTC_10x6_UNORM: func = decompressASTC<10, 6, false>;
+			break;
+		case TinyImageFormat_ASTC_10x8_UNORM: func = decompressASTC<10, 8, false>;
+			break;
+		case TinyImageFormat_ASTC_10x10_UNORM: func = decompressASTC<10, 10, false>;
+			break;
+		case TinyImageFormat_ASTC_12x10_UNORM: func = decompressASTC<12, 10, false>;
+			break;
+		case TinyImageFormat_ASTC_12x12_UNORM: func = decompressASTC<12, 12, false>;
+			break;
+		case TinyImageFormat_ASTC_4x4_SRGB: func = decompressASTC<4, 4, true>;
+			break;
+		case TinyImageFormat_ASTC_5x4_SRGB: func = decompressASTC<5, 4, true>;
+			break;
+		case TinyImageFormat_ASTC_5x5_SRGB: func = decompressASTC<5, 5, true>;
+			break;
+		case TinyImageFormat_ASTC_6x5_SRGB: func = decompressASTC<6, 5, true>;
+			break;
+		case TinyImageFormat_ASTC_6x6_SRGB: func = decompressASTC<6, 6, true>;
+			break;
+		case TinyImageFormat_ASTC_8x5_SRGB: func = decompressASTC<8, 5, true>;
+			break;
+		case TinyImageFormat_ASTC_8x6_SRGB: func = decompressASTC<8, 6, true>;
+			break;
+		case TinyImageFormat_ASTC_8x8_SRGB: func = decompressASTC<8, 8, true>;
+			break;
+		case TinyImageFormat_ASTC_10x5_SRGB: func = decompressASTC<10, 5, true>;
+			break;
+		case TinyImageFormat_ASTC_10x6_SRGB: func = decompressASTC<10, 6, true>;
+			break;
+		case TinyImageFormat_ASTC_10x8_SRGB: func = decompressASTC<10, 8, true>;
+			break;
+		case TinyImageFormat_ASTC_10x10_SRGB: func = decompressASTC<10, 10, true>;
+			break;
+		case TinyImageFormat_ASTC_12x10_SRGB: func = decompressASTC<12, 10, true>;
+			break;
+		case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12, 12, true>;
 			break;
 
-	default: return nullptr;
+			/*	case TinyImageFormat_ETC1_R8G8B8_UNORM:
+				case TinyImageFormat_ETC1_R8G8B8_SRGB:
+					func = Image_DecompressETC1Block;
+					break;*/
+		case TinyImageFormat_ETC2_EAC_R11_UNORM: func = Image_DecompressEAC11Block;
+			break;
+		case TinyImageFormat_ETC2_EAC_R11_SNORM: func = Image_DecompressEACSigned11Block;
+			break;
+		case TinyImageFormat_ETC2_EAC_R11G11_UNORM: func = Image_DecompressEACDual11Block;
+			break;
+		case TinyImageFormat_ETC2_EAC_R11G11_SNORM: func = Image_DecompressEACDualSigned11Block;
+			break;
+
+		case TinyImageFormat_ETC2_R8G8B8_UNORM:
+		case TinyImageFormat_ETC2_R8G8B8_SRGB: func = Image_DecompressETC2Block;
+			break;
+		case TinyImageFormat_ETC2_R8G8B8A8_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A8_UNORM: func = Image_DecompressETC2EACBlock;
+			break;
+		case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
+		case TinyImageFormat_ETC2_R8G8B8A1_UNORM: func = Image_DecompressETC2PunchThroughBlock;
+			break;
+
+		default: return nullptr;
 	}
 
 	Image_ImageHeader const *dst = Image_CreateNoClear(src->width, src->height, 1, src->slices, dstFormat);
-	if (!dst)
+	if (!dst) {
 		return nullptr;
+	}
 
 	// get block size round up to 4
-	size_t const blocksX = (src->width + TinyImageFormat_WidthOfBlock(src->format)-1) / TinyImageFormat_WidthOfBlock(src->format);
-	size_t const blocksY = (src->height + TinyImageFormat_HeightOfBlock(src->format)-1) / TinyImageFormat_HeightOfBlock(src->format);
+	size_t const blocksX =
+			(src->width + TinyImageFormat_WidthOfBlock(src->format) - 1) / TinyImageFormat_WidthOfBlock(src->format);
+	size_t const blocksY =
+			(src->height + TinyImageFormat_HeightOfBlock(src->format) - 1) / TinyImageFormat_HeightOfBlock(src->format);
 
 	uint8_t uncompressedBlock[TinyImageFormat_MaxPixelCountOfBlock * 4 * sizeof(float)];
 
@@ -425,10 +447,10 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 
 				func(compressedBlock, uncompressedBlock);
 
-				uint8_t const* ub = (uint8_t const*) uncompressedBlock;
+				uint8_t const *ub = (uint8_t const *) uncompressedBlock;
 				for (uint32_t dy = 0; dy < TinyImageFormat_HeightOfBlock(src->format); ++dy) {
 					uint8_t *dstPtr = rawData + (Image_CalculateIndex(dst,
-							sx,sy + dy, 0, w) * dstSize);
+																														sx, sy + dy, 0, w) * dstSize);
 
 					memcpy(dstPtr, ub, dstPitch);
 					ub += dstPitch;;

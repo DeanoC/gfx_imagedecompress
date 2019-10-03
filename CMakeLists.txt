@@ -27,6 +27,9 @@ set(Src
 		bc7decompress.cpp
 		astcdecompress.cpp
 		etc1decompress.cpp
+		eacdecompress.cpp
+		etc2decompress.cpp
+		detex_clamp.c
 		)
 set(Deps
 		al2o3_platform
