@@ -20,7 +20,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "al2o3_platform/platform.h"
 
-extern const uint8_t detex_clamp0to255_table[767];
+extern "C" const uint8_t detex_clamp0to255_table[767];
 
 /* Clamp an integer value in the range -255 to 511 to the the range 0 to 255. */
 static AL2O3_FORCE_INLINE uint8_t detexClamp0To255(int x) {

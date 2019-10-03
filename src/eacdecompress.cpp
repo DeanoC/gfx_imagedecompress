@@ -18,7 +18,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 #include "al2o3_platform/platform.h"
 
-extern const uint8_t detex_clamp0to255_table[767];
+extern "C" const uint8_t detex_clamp0to255_table[767];
 extern bool detexDecompressBlockETC2(const uint8_t * AL2O3_RESTRICT bitstring, uint8_t * AL2O3_RESTRICT pixel_buffer);
 
 #define DETEX_PIXEL32_ALPHA_BYTE_OFFSET 4
