@@ -592,10 +592,10 @@ bool detexDecompressBlockETC2_PUNCHTHROUGH(const uint8_t * AL2O3_RESTRICT bitstr
 	}
 }
 
-AL2O3_EXTERN_C void Image_DecompressETC2PunchThroughBlock(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
+AL2O3_EXTERN_C void Image_DecompressETC2PunchThroughBlock(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
 	detexDecompressBlockETC2_PUNCHTHROUGH((uint8_t const*) input, output);
 }
 
-AL2O3_EXTERN_C void Image_DecompressETC2Block(void const AL2O3_RESTRICT* input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
+AL2O3_EXTERN_C void Image_DecompressETC2Block(void const *AL2O3_RESTRICT input, uint8_t output[4 * 4 * sizeof(uint32_t)]) {
 	detexDecompressBlockETC2((uint8_t const*)input, output);
 }
