@@ -1,9 +1,13 @@
 #pragma once
 
 #include "al2o3_platform/platform.h"
+#include "al2o3_enki/TaskScheduler_c.h"
 
 // highest level API. If uncompressed return src, null if cant, new image returned if decompressed
 AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const *src);
+
+// this will decompress using all cores using enki task manager
+AL2O3_EXTERN_C Image_ImageHeader const *ImageDecompressWithEnki(Image_ImageHeader const *src, enkiTaskSchedulerHandle taskScheduler);
 
 // lowest level interface block decompression API
 // TODO BC4 and 5 should have UNORM & SNORM for float decoders

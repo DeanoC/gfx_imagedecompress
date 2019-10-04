@@ -35,6 +35,7 @@ set(Deps
 		al2o3_platform
 		al2o3_memory
 		al2o3_cmath
+		al2o3_enki
 		tiny_imageformat
 		gfx_image_interface
 		)

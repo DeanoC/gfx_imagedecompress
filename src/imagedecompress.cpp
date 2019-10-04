@@ -211,21 +211,10 @@ template<uint32_t blockX, uint32_t blockY, bool isSRGB>
 static void decompressASTC(void const *input, uint8_t *output) {
 	Image_DecompressASTCBlock(input, blockX, blockY, isSRGB, output);
 }
-
-AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const *src) {
-	if (src->depth > 1) {
-		return nullptr;
-	}
-
-	if (!TinyImageFormat_IsCompressed(src->format)) {
-		return src;
-	}
-
-	bool const sRGB = TinyImageFormat_IsSRGB(src->format);
-
+static TinyImageFormat ChooseDstFormatFromCompressedFormat(TinyImageFormat srcFormat) {
 	TinyImageFormat dstFormat = TinyImageFormat_UNDEFINED;
 
-	switch (src->format) {
+	switch (srcFormat) {
 		case TinyImageFormat_DXBC1_RGB_UNORM:
 		case TinyImageFormat_DXBC1_RGBA_UNORM:
 		case TinyImageFormat_DXBC2_UNORM:
@@ -295,7 +284,7 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 			break;
 
 		case TinyImageFormat_DXBC6H_UFLOAT:
-		case TinyImageFormat_DXBC6H_SFLOAT: return nullptr;
+		case TinyImageFormat_DXBC6H_SFLOAT: break;
 
 		case TinyImageFormat_PVRTC1_2BPP_UNORM:
 		case TinyImageFormat_PVRTC1_4BPP_UNORM:
@@ -304,14 +293,18 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 		case TinyImageFormat_PVRTC1_2BPP_SRGB:
 		case TinyImageFormat_PVRTC1_4BPP_SRGB:
 		case TinyImageFormat_PVRTC2_2BPP_SRGB:
-		case TinyImageFormat_PVRTC2_4BPP_SRGB: return nullptr;
+		case TinyImageFormat_PVRTC2_4BPP_SRGB: break;
 
-		default: ASSERT(false);
-			return nullptr;
+		default: ASSERT(false); break;
 	}
-	auto func = &Image_DecompressDXBC1Block;
 
-	switch (src->format) {
+	return dstFormat;
+}
+typedef void (*decompressFunc)(void const *input, uint8_t output[4 * 4 * sizeof(uint32_t)]);
+
+static decompressFunc ChooseDecompressFunction(TinyImageFormat srcFormat) {
+	decompressFunc func = nullptr;
+	switch (srcFormat) {
 		case TinyImageFormat_DXBC1_RGB_UNORM:
 		case TinyImageFormat_DXBC1_RGBA_UNORM:
 		case TinyImageFormat_DXBC1_RGB_SRGB:
@@ -388,11 +381,6 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 			break;
 		case TinyImageFormat_ASTC_12x12_SRGB: func = decompressASTC<12, 12, true>;
 			break;
-
-			/*	case TinyImageFormat_ETC1_R8G8B8_UNORM:
-				case TinyImageFormat_ETC1_R8G8B8_SRGB:
-					func = Image_DecompressETC1Block;
-					break;*/
 		case TinyImageFormat_ETC2_EAC_R11_UNORM: func = Image_DecompressEAC11Block;
 			break;
 		case TinyImageFormat_ETC2_EAC_R11_SNORM: func = Image_DecompressEACSigned11Block;
@@ -401,7 +389,6 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 			break;
 		case TinyImageFormat_ETC2_EAC_R11G11_SNORM: func = Image_DecompressEACDualSigned11Block;
 			break;
-
 		case TinyImageFormat_ETC2_R8G8B8_UNORM:
 		case TinyImageFormat_ETC2_R8G8B8_SRGB: func = Image_DecompressETC2Block;
 			break;
@@ -411,8 +398,31 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 		case TinyImageFormat_ETC2_R8G8B8A1_SRGB:
 		case TinyImageFormat_ETC2_R8G8B8A1_UNORM: func = Image_DecompressETC2PunchThroughBlock;
 			break;
+		default: func = nullptr; break;
+	}
+	return func;
+}
 
-		default: return nullptr;
+AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const *src) {
+	if (src->depth > 1) {
+		return nullptr;
+	}
+
+	if (!TinyImageFormat_IsCompressed(src->format)) {
+		return src;
+	}
+
+	bool const sRGB = TinyImageFormat_IsSRGB(src->format);
+
+	auto dstFormat = ChooseDstFormatFromCompressedFormat(src->format);
+	auto func = ChooseDecompressFunction(src->format);
+
+	if(dstFormat == TinyImageFormat_UNDEFINED) {
+		return nullptr;
+	}
+
+	if(func == nullptr) {
+		return nullptr;
 	}
 
 	Image_ImageHeader const *dst = Image_CreateNoClear(src->width, src->height, 1, src->slices, dstFormat);
@@ -458,5 +468,102 @@ AL2O3_EXTERN_C Image_ImageHeader const *Image_Decompress(Image_ImageHeader const
 			}
 		}
 	}
+	return dst;
+}
+struct EnkiDecompressParameterBlock {
+	Image_ImageHeader const * src;
+	Image_ImageHeader const * dst;
+	decompressFunc func;
+	uint32_t w;
+};
+
+void EnkiDecompressBlockFunc(uint32_t start, uint32_t end, uint32_t threadnum, void* pArgs) {
+	auto paramBlock = (EnkiDecompressParameterBlock const*) pArgs;
+	Image_ImageHeader const * src = paramBlock->src;
+	Image_ImageHeader const * dst = paramBlock->dst;
+	decompressFunc func = paramBlock->func;
+	uint32_t w = paramBlock->w;
+
+	uint32_t const srcSize = TinyImageFormat_BitSizeOfBlock(src->format) / 8;
+	uint32_t const dstSize = TinyImageFormat_BitSizeOfBlock(dst->format) / 8;
+	uint32_t const dstPitch = TinyImageFormat_WidthOfBlock(src->format) * dstSize;
+
+	uint8_t *compressedBlock = (uint8_t *) STACK_ALLOC(srcSize);
+	uint8_t uncompressedBlock[TinyImageFormat_MaxPixelCountOfBlock * 4 * sizeof(float)];
+
+	// get block size round up to 4
+	size_t const blocksX =
+			(src->width + TinyImageFormat_WidthOfBlock(src->format) - 1) / TinyImageFormat_WidthOfBlock(src->format);
+	size_t const blocksY =
+			(src->height + TinyImageFormat_HeightOfBlock(src->format) - 1) / TinyImageFormat_HeightOfBlock(src->format);
+	uint8_t *rawData = (uint8_t *) Image_RawDataPtr(dst);
+
+	for (uint32_t b = start; b < end; ++b) {
+		uint32_t x = b % blocksX;
+		uint32_t y = b / blocksY;
+
+		uint32_t const sx = x * TinyImageFormat_WidthOfBlock(src->format);
+		uint32_t const sy = y * TinyImageFormat_HeightOfBlock(src->format);
+
+		ReadNxNBlock(src, sx, sy, w, srcSize, compressedBlock);
+
+		func(compressedBlock, uncompressedBlock);
+
+		uint8_t const *ub = (uint8_t const *) uncompressedBlock;
+		for (uint32_t dy = 0; dy < TinyImageFormat_HeightOfBlock(src->format); ++dy) {
+			uint8_t *dstPtr = rawData + (Image_CalculateIndex(dst,
+																												sx, sy + dy, 0, w) * dstSize);
+
+			memcpy(dstPtr, ub, dstPitch);
+			ub += dstPitch;;
+		}
+	}
+}
+
+AL2O3_EXTERN_C Image_ImageHeader const *ImageDecompressWithEnki(Image_ImageHeader const *src, enkiTaskSchedulerHandle taskScheduler) {
+	if (src->depth > 1) {
+		return nullptr;
+	}
+
+	if (!TinyImageFormat_IsCompressed(src->format)) {
+		return src;
+	}
+
+	bool const sRGB = TinyImageFormat_IsSRGB(src->format);
+
+	auto dstFormat = ChooseDstFormatFromCompressedFormat(src->format);
+	auto func = ChooseDecompressFunction(src->format);
+
+	if(dstFormat == TinyImageFormat_UNDEFINED) {
+		return nullptr;
+	}
+
+	if(func == nullptr) {
+		return nullptr;
+	}
+
+	Image_ImageHeader const *dst = Image_CreateNoClear(src->width, src->height, 1, src->slices, dstFormat);
+	if (!dst) {
+		return nullptr;
+	}
+
+	// get block size round up to 4
+	size_t const blocksX =
+			(src->width + TinyImageFormat_WidthOfBlock(src->format) - 1) / TinyImageFormat_WidthOfBlock(src->format);
+	size_t const blocksY =
+			(src->height + TinyImageFormat_HeightOfBlock(src->format) - 1) / TinyImageFormat_HeightOfBlock(src->format);
+
+	auto taskSet = enkiCreateTaskSet(taskScheduler, &EnkiDecompressBlockFunc);
+
+	auto paramBlocks = (EnkiDecompressParameterBlock*) STACK_ALLOC(sizeof(EnkiDecompressParameterBlock) * src->slices);
+
+	for (uint32_t w = 0; w < src->slices; ++w) {
+		paramBlocks[w] =  { src, dst, func, w };
+		enkiAddTaskSetToPipeMinRange(taskScheduler, taskSet, &paramBlocks[w], blocksX * blocksY, 10);
+	}
+
+	enkiWaitForTaskSet(taskScheduler, taskSet);
+	enkiDeleteTaskSet(taskSet);
+
 	return dst;
 }
